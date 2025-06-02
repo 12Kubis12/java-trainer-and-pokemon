@@ -89,6 +89,10 @@ public class CRUDManager {
             final int trainerId = trainers.get(choice - 1).getId();
             entities = this.trainerAndPokemonService.searchPokemonByTrainerId(trainerId);
         }
+
+        if (entities.isEmpty()) {
+            System.out.println("Trainer " + trainers.get(choice - 1).getName() + " does not have any Pokémon.");
+        }
         entities.forEach(System.out::println);
     }
 
@@ -116,6 +120,7 @@ public class CRUDManager {
             case POKEMON -> {
                 System.out.println("Enter name:");
                 final String name = InputUtils.readString();
+                System.out.println("Enter Pokémon trainer.");
                 final List<FromTable> trainers = this.trainerAndPokemonService.readAll(TableType.TRAINER);
                 final int choice = this.chooseFromOptions(trainers, false);
                 int result;
@@ -235,7 +240,7 @@ public class CRUDManager {
     }
 
     private void catchPokemon() {
-        System.out.println("Choose a trainer who wants to caught a Pokémon:\n");
+        System.out.println("Choose a trainer who wants to caught a Pokémon.");
         final List<FromTable> trainers = this.trainerAndPokemonService.readAll(TableType.TRAINER);
         final int firstChoice = this.chooseFromOptions(trainers, true);
 
@@ -249,7 +254,7 @@ public class CRUDManager {
                 final Pokemon chosenPokemon = (Pokemon) pokemon.get(secondChoice - 1);
                 chosenPokemon.setTrainer_id(trainerId);
                 if (this.trainerAndPokemonService.editPokemon(chosenPokemon) > 0) {
-                    System.out.println("Pokémon edited successfully.");
+                    System.out.println("Pokémon caught successfully.");
                 }
             }
         }

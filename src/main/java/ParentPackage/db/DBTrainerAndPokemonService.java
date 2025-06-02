@@ -24,10 +24,10 @@ public class DBTrainerAndPokemonService {
 
     private static final String READ_TRAINERS_ORDERED_BY_NUMBER_OF_POKEMON =
             """
-                    SELECT t.id, t.name, COUNT(*) number_of_pokemon
+                    SELECT t.id, t.name, COUNT(*) AS number_of_pokemon
                     FROM trainer t
                     JOIN pokemon p ON p.trainer_id = t.id
-                    GROUP BY p.trainer_id
+                    GROUP BY t.id
                     ORDER BY number_of_pokemon DESC;""";
 
     private static final String READ_UNCAUGHT_POKEMON = "SELECT * FROM pokemon WHERE trainer_id IS NULL";
