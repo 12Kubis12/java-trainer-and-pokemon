@@ -2,19 +2,19 @@ CREATE database trainer_and_pokemon;
 USE trainer_and_pokemon;
 
 CREATE TABLE trainer(
-	trainer_id INT AUTO_INCREMENT PRIMARY KEY,
-    full_name VARCHAR(35) UNIQUE NOT NULL
+	id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(35) UNIQUE NOT NULL
     );
 
 CREATE TABLE pokemon(
-	pokemon_id INT AUTO_INCREMENT PRIMARY KEY,
+	id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(35) NOT NULL,
     trainer_id INT,
-    FOREIGN KEY (trainer_id) REFERENCES trainer(trainer_id)
+    FOREIGN KEY (trainer_id) REFERENCES trainer(id)
     );
 
 INSERT INTO trainer
-	(full_name)
+	(name)
 VALUES
 	('Ash Ketchum'),
 	('Brock'),
