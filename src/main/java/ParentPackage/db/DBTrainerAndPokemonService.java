@@ -2,7 +2,6 @@ package ParentPackage.db;
 
 import org.slf4j.Logger;
 
-
 import java.sql.*;
 import java.util.*;
 
@@ -31,12 +30,12 @@ public class DBTrainerAndPokemonService {
                     GROUP BY p.trainer_id
                     ORDER BY number_of_pokemon DESC;""";
 
-    private static final String READ_POKEMON_WHO_ARE_NOT_CAUGHT = "SELECT * FROM pokemon WHERE trainer_id IS NULL";
+    private static final String READ_UNCAUGHT_POKEMON = "SELECT * FROM pokemon WHERE trainer_id IS NULL";
 
     private static final Logger logger = getLogger(DBTrainerAndPokemonService.class);
 
     public List<FromTable> readAll(TableType tableType) {
-        String query = this.setQuery(READ_ALL, tableType);
+        final String query = this.setQuery(READ_ALL, tableType);
 
         try (Connection connection = HikariCPDataSource.getConnection();
              PreparedStatement statement = connection.prepareStatement(query)) {
@@ -51,7 +50,8 @@ public class DBTrainerAndPokemonService {
 
     public int createTrainer(String name) {
         try (Connection connection = HikariCPDataSource.getConnection();
-             PreparedStatement statement = connection.prepareStatement(CREATE_TRAINER, PreparedStatement.RETURN_GENERATED_KEYS)) {
+             PreparedStatement statement = connection.prepareStatement(CREATE_TRAINER,
+                     PreparedStatement.RETURN_GENERATED_KEYS)) {
 
             statement.setString(1, name);
             return statement.executeUpdate();
@@ -66,7 +66,8 @@ public class DBTrainerAndPokemonService {
 
     public int createPokemon(String name, int trainer_id) {
         try (Connection connection = HikariCPDataSource.getConnection();
-             PreparedStatement statement = connection.prepareStatement(CREATE_POKEMON, PreparedStatement.RETURN_GENERATED_KEYS)) {
+             PreparedStatement statement = connection.prepareStatement(CREATE_POKEMON,
+                     PreparedStatement.RETURN_GENERATED_KEYS)) {
 
             statement.setString(1, name);
             if (trainer_id == 0) {
@@ -82,10 +83,11 @@ public class DBTrainerAndPokemonService {
     }
 
     public int delete(TableType tableType, int id) {
-        String query = this.setQuery(DELETE, tableType);
+        final String query = this.setQuery(DELETE, tableType);
 
         try (Connection connection = HikariCPDataSource.getConnection();
              PreparedStatement statement = connection.prepareStatement(query)) {
+
             statement.setInt(1, id);
             return statement.executeUpdate();
         } catch (SQLIntegrityConstraintViolationException e) {
@@ -126,7 +128,7 @@ public class DBTrainerAndPokemonService {
             statement.setInt(3, pokemon.getId());
             return statement.executeUpdate();
         } catch (SQLIntegrityConstraintViolationException e) {
-            System.out.println("Trainer with this id does not exist!\nTry again:");
+            System.out.println("Trainer with this id does not exist!");
             return 0;
         } catch (SQLException e) {
             logger.error("Error while editing Pokémon!", e);
@@ -134,12 +136,13 @@ public class DBTrainerAndPokemonService {
         }
     }
 
-    public List<FromTable> searchByName(TableType tableType, String name) {
-        String query = this.setQuery(SEARCH_BY_NAME, tableType);
+    public List<FromTable> searchByName(TableType tableType, String subString) {
+        final String query = this.setQuery(SEARCH_BY_NAME, tableType);
+
         try (Connection connection = HikariCPDataSource.getConnection();
              PreparedStatement statement = connection.prepareStatement(query)) {
 
-            statement.setString(1, "%" + name + "%");
+            statement.setString(1, "%" + subString + "%");
             ResultSet resultSet = statement.executeQuery();
             return this.createList(resultSet, tableType);
         } catch (SQLException e) {
@@ -161,28 +164,28 @@ public class DBTrainerAndPokemonService {
         }
     }
 
-    public Map<FromTable, Integer> readTrainerByNUmberOfPokemon() {
+    public Map<FromTable, Integer> readTrainerByNumberOfPokemon() {
         try (Connection connection = HikariCPDataSource.getConnection();
              PreparedStatement statement = connection.prepareStatement(READ_TRAINERS_ORDERED_BY_NUMBER_OF_POKEMON)) {
 
             ResultSet resultSet = statement.executeQuery();
-            Map<FromTable, Integer> trainerByPokemon = new HashMap<>();
+            Map<FromTable, Integer> trainerByNumberOfPokemon = new HashMap<>();
             while (resultSet.next()) {
-                trainerByPokemon.put(new Trainer(
-                        resultSet.getInt("id"),
-                        resultSet.getString("name")), resultSet.getInt("number_of_pokemon")
+                trainerByNumberOfPokemon.put(new Trainer(resultSet.getInt("id"),
+                                resultSet.getString("name")),
+                        resultSet.getInt("number_of_pokemon")
                 );
             }
-            return trainerByPokemon;
+            return trainerByNumberOfPokemon;
         } catch (SQLException e) {
             logger.error("Error while reading {} ordered by number of Pokémon!", TableType.TRAINER, e);
             return null;
         }
     }
 
-    public List<FromTable> readNotCaughtPokemon() {
+    public List<FromTable> readUncaughtPokemon() {
         try (Connection connection = HikariCPDataSource.getConnection();
-             PreparedStatement statement = connection.prepareStatement(READ_POKEMON_WHO_ARE_NOT_CAUGHT)) {
+             PreparedStatement statement = connection.prepareStatement(READ_UNCAUGHT_POKEMON)) {
 
             ResultSet resultSet = statement.executeQuery();
             return this.createList(resultSet, TableType.POKEMON);

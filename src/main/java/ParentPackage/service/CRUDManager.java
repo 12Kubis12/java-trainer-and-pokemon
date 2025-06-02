@@ -16,94 +16,92 @@ public class CRUDManager {
     public void printOptions() {
         PrintUtils.printDivider();
         System.out.println("Hello, welcome to trainer and pokemon manager.");
-        PrintUtils.printChooseOptions();
+
         while (true) {
-            System.out.println("0. Exit.");
-            System.out.println("1. Work with the list of trainers.");
-            System.out.println("2. Work with the list of Pokémon.");
-            System.out.println("3. List the Pokémon that belong to a given trainer.");
-            System.out.println("4. List trainers sorted by number of owned Pokémon.");
-            System.out.println("5. List Pokémon that are not caught (do not belong to anyone).");
-            System.out.println("6. Catch a Pokémon (" +
-                    "you choose the trainer who catches, then a Pokémon that doesn't belong to anyone).");
+            PrintUtils.printDivider();
+            PrintUtils.printChooseOptions();
+            System.out.println("0 -> Exit.");
+            System.out.println("1 -> Work with the list of trainers.");
+            System.out.println("2 -> Work with the list of Pokémon.");
+            System.out.println("3 -> List the Pokémon that belong to a given trainer.");
+            System.out.println("4 -> List the trainers sorted by number of owned Pokémon.");
+            System.out.println("5 -> List the Pokémon that are not caught (do not belong to anyone).");
+            System.out.println("6 -> Catch a Pokémon (" +
+                    "you choose a trainer who catches and then a Pokémon that doesn't belong to anyone).");
             PrintUtils.printDivider();
 
             final int choice = InputUtils.readInt();
             switch (choice) {
-                case 1 -> this.printTableOptions(TableType.TRAINER);
-                case 2 -> this.printTableOptions(TableType.POKEMON);
-                case 3 -> this.printPokemonByTrainerId();
-                case 4 -> this.printTrainerByNUmberOfPokemon();
-                case 5 -> this.printNotCaughtPokemon();
-                case 6 -> this.catchPokemon();
                 case 0 -> {
                     System.out.println("Good Bye!");
                     return;
                 }
+                case 1 -> this.printTableContent(TableType.TRAINER);
+                case 2 -> this.printTableContent(TableType.POKEMON);
+                case 3 -> this.printPokemonByTrainerId();
+                case 4 -> this.printTrainerByNumberOfPokemon();
+                case 5 -> this.printUncaughtPokemon();
+                case 6 -> this.catchPokemon();
                 default -> PrintUtils.printInvalidChoice();
             }
         }
-
     }
 
-    public void printTableOptions(TableType tableType) {
-        PrintUtils.printChooseOptions();
+    private void printTableContent(TableType tableType) {
         while (true) {
-            System.out.println("0. Go back.");
-            System.out.println("1. Get every " + tableType + ".");
-            System.out.println("2. Edit " + tableType + ".");
-            System.out.println("3. Add " + tableType + ".");
-            System.out.println("4. Delete " + tableType + ".");
-            System.out.println("5. Search " + tableType + " by name.");
+            PrintUtils.printDivider();
+            PrintUtils.printChooseOptions();
+            System.out.println("0 -> Go back.");
+            System.out.println("1 -> Get every " + tableType + ".");
+            System.out.println("2 -> Edit a " + tableType + ".");
+            System.out.println("3 -> Add a " + tableType + ".");
+            System.out.println("4 -> Delete a " + tableType + ".");
+            System.out.println("5 -> Search a " + tableType + " by name.");
             PrintUtils.printDivider();
 
             final int choice = InputUtils.readInt();
-
             switch (choice) {
+                case 0 -> {
+                    return;
+                }
                 case 1 -> this.printAll(tableType);
                 case 2 -> this.edit(tableType);
                 case 3 -> this.create(tableType);
                 case 4 -> this.delete(tableType);
                 case 5 -> this.searchByName(tableType);
-                case 0 -> {
-                    PrintUtils.printChooseOptions();
-                    return;
-                }
                 default -> PrintUtils.printInvalidChoice();
             }
         }
     }
 
     private void printAll(TableType tableType) {
-        List<FromTable> entities = this.trainerAndPokemonService.readAll(tableType);
+        final List<FromTable> entities = this.trainerAndPokemonService.readAll(tableType);
         entities.forEach(System.out::println);
-        PrintUtils.printDivider();
     }
 
     private void printPokemonByTrainerId() {
-        int trainerId = this.giveOptions();
+        final List<FromTable> trainers = this.trainerAndPokemonService.readAll(TableType.TRAINER);
+        final int choice = this.chooseFromOptions(trainers, false);
         List<FromTable> entities;
-        if (trainerId == 0) {
-            entities = this.trainerAndPokemonService.readNotCaughtPokemon();
+        if (choice == 0) {
+            entities = this.trainerAndPokemonService.readUncaughtPokemon();
         } else {
+            final int trainerId = trainers.get(choice - 1).getId();
             entities = this.trainerAndPokemonService.searchPokemonByTrainerId(trainerId);
         }
         entities.forEach(System.out::println);
-        PrintUtils.printDivider();
     }
 
-    private void printTrainerByNUmberOfPokemon() {
-        final Map<FromTable, Integer> trainerByPokemon = this.trainerAndPokemonService.readTrainerByNUmberOfPokemon();
+    private void printTrainerByNumberOfPokemon() {
+        final Map<FromTable, Integer> trainerByPokemon = this.trainerAndPokemonService.readTrainerByNumberOfPokemon();
         trainerByPokemon.entrySet().stream()
                 .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
                 .forEach(System.out::println);
-        PrintUtils.printDivider();
     }
 
-    private void printNotCaughtPokemon() {
-        final List<FromTable> entities = this.trainerAndPokemonService.readNotCaughtPokemon();
+    private void printUncaughtPokemon() {
+        final List<FromTable> entities = this.trainerAndPokemonService.readUncaughtPokemon();
         entities.forEach(System.out::println);
-        PrintUtils.printDivider();
     }
 
     private void create(TableType tableType) {
@@ -111,43 +109,48 @@ public class CRUDManager {
             case TRAINER -> {
                 System.out.println("Enter full name:");
                 final String name = InputUtils.readString();
-                final int result = this.trainerAndPokemonService.createTrainer(name);
-                if (result > 0) {
+                if (this.trainerAndPokemonService.createTrainer(name) > 0) {
                     System.out.println("Trainer created successfully.");
                 }
             }
             case POKEMON -> {
                 System.out.println("Enter name:");
                 final String name = InputUtils.readString();
-                final int trainerId = this.giveOptions();
-                final int result = this.trainerAndPokemonService.createPokemon(name, trainerId);
+                final List<FromTable> trainers = this.trainerAndPokemonService.readAll(TableType.TRAINER);
+                final int choice = this.chooseFromOptions(trainers, false);
+                int result;
+                if (choice == 0) {
+                    result = this.trainerAndPokemonService.createPokemon(name, 0);
+                } else {
+                    final int trainerId = trainers.get(choice - 1).getId();
+                    result = this.trainerAndPokemonService.createPokemon(name, trainerId);
+                }
                 if (result > 0) {
                     System.out.println("Pokémon created successfully.");
                 }
             }
-
         }
     }
 
     private void delete(TableType tableType) {
-        final List<FromTable> allObjects = this.trainerAndPokemonService.readAll(tableType);
+        final List<FromTable> entities = this.trainerAndPokemonService.readAll(tableType);
 
-        int choice = this.chooseFromOptions(allObjects, tableType);
+        final int choice = this.chooseFromOptions(entities, true);
 
         if (choice != 0) {
-            if (this.trainerAndPokemonService.delete(tableType, allObjects.get(choice - 1).getId()) > 0) {
+            if (this.trainerAndPokemonService.delete(tableType, entities.get(choice - 1).getId()) > 0) {
                 System.out.println(tableType + " deleted successfully.");
             }
         }
     }
 
     private void edit(TableType tableType) {
-        final List<FromTable> allObjects = this.trainerAndPokemonService.readAll(tableType);
+        final List<FromTable> entities = this.trainerAndPokemonService.readAll(tableType);
 
-        int choice = this.chooseFromOptions(allObjects, tableType);
+        int choice = this.chooseFromOptions(entities, true);
 
         if (choice != 0) {
-            final Optional<FromTable> entityToEdit = this.editFromInput(tableType, allObjects.get(choice - 1));
+            final Optional<FromTable> entityToEdit = this.editFromInput(tableType, entities.get(choice - 1));
             if (entityToEdit.isPresent()) {
                 switch (tableType) {
                     case TRAINER -> {
@@ -156,8 +159,7 @@ public class CRUDManager {
                         }
                     }
                     case POKEMON -> {
-                        int resultOption = this.trainerAndPokemonService.editPokemon((Pokemon) entityToEdit.get());
-                        if (resultOption > 0) {
+                        if (this.trainerAndPokemonService.editPokemon((Pokemon) entityToEdit.get()) > 0) {
                             System.out.println("Pokémon edited successfully.");
                         }
                     }
@@ -166,22 +168,22 @@ public class CRUDManager {
         }
     }
 
-    private Optional<FromTable> editFromInput(TableType tableType, FromTable fromTable) {
-        String name = fromTable.getName();
+    private Optional<FromTable> editFromInput(TableType tableType, FromTable entityToEdit) {
+        String name = entityToEdit.getName();
         int trainerId = 0;
         if (tableType == TableType.POKEMON) {
-            trainerId = ((Pokemon) fromTable).getTrainerId();
+            trainerId = ((Pokemon) entityToEdit).getTrainerId();
         }
 
         while (true) {
-            System.out.println("0. Back");
-            System.out.println("1. -> Edit name (" + name + ")");
+            PrintUtils.printChooseOptions();
+            System.out.println("0 -> Back");
+            System.out.println("1 -> Edit name (" + name + ")");
             if (tableType == TableType.POKEMON) {
-                System.out.println("2. -> Edit trainer_id (" + trainerId + ")");
+                System.out.println("2 -> Edit trainer_id (" + trainerId + ")");
             }
-            System.out.println("Write corresponding index of option (from options above):");
-            final int choice = InputUtils.readInt();
-            switch (choice) {
+            final int firstChoice = InputUtils.readInt();
+            switch (firstChoice) {
                 case 0 -> {
                     return Optional.empty();
                 }
@@ -191,7 +193,13 @@ public class CRUDManager {
                 }
                 case 2 -> {
                     if (tableType == TableType.POKEMON) {
-                        trainerId = this.giveOptions();
+                        final List<FromTable> trainers = this.trainerAndPokemonService.readAll(TableType.TRAINER);
+                        final int secondChoice = this.chooseFromOptions(trainers, false);
+                        if (secondChoice == 0) {
+                            trainerId = 0;
+                        } else {
+                            trainerId = trainers.get(secondChoice - 1).getId();
+                        }
                     } else {
                         PrintUtils.printInvalidChoice();
                         continue;
@@ -205,10 +213,10 @@ public class CRUDManager {
 
             switch (tableType) {
                 case TRAINER -> {
-                    return Optional.of(new Trainer(fromTable.getId(), name));
+                    return Optional.of(new Trainer(entityToEdit.getId(), name));
                 }
                 case POKEMON -> {
-                    return Optional.of(new Pokemon(fromTable.getId(), name, trainerId));
+                    return Optional.of(new Pokemon(entityToEdit.getId(), name, trainerId));
                 }
             }
         }
@@ -217,68 +225,45 @@ public class CRUDManager {
     private void searchByName(TableType tableType) {
         System.out.println("Enter name:");
         final String name = InputUtils.readString();
-        final List<FromTable> allObjects = this.trainerAndPokemonService.searchByName(tableType, name);
-        if (allObjects.isEmpty()) {
+        final List<FromTable> entities = this.trainerAndPokemonService.searchByName(tableType, name);
+        if (entities.isEmpty()) {
             System.out.println("No " + tableType + " found!");
             return;
         }
         System.out.println("Found " + tableType + ":");
-        allObjects.forEach(System.out::println);
+        entities.forEach(System.out::println);
     }
 
     private void catchPokemon() {
-        System.out.println("Choose trainer who wants to caught Pokémon:\n");
+        System.out.println("Choose a trainer who wants to caught a Pokémon:\n");
         final List<FromTable> trainers = this.trainerAndPokemonService.readAll(TableType.TRAINER);
-        int firstChoice = this.chooseFromOptions(trainers, TableType.TRAINER);
+        final int firstChoice = this.chooseFromOptions(trainers, true);
 
         if (firstChoice != 0) {
-            int trainerId = trainers.get(firstChoice - 1).getId();
-            System.out.println("Choose Pokémon to catch:\n");
-            final List<FromTable> pokemon = this.trainerAndPokemonService.readNotCaughtPokemon();
-            int secondChoice = this.chooseFromOptions(pokemon, TableType.POKEMON);
+            final int trainerId = trainers.get(firstChoice - 1).getId();
+            System.out.println("Choose a Pokémon to catch:\n");
+            final List<FromTable> pokemon = this.trainerAndPokemonService.readUncaughtPokemon();
+            final int secondChoice = this.chooseFromOptions(pokemon, true);
 
             if (secondChoice != 0) {
-                Pokemon chosenPokemon = (Pokemon) pokemon.get(secondChoice - 1);
+                final Pokemon chosenPokemon = (Pokemon) pokemon.get(secondChoice - 1);
                 chosenPokemon.setTrainer_id(trainerId);
-                int resultOption = this.trainerAndPokemonService.editPokemon(chosenPokemon);
-                if (resultOption > 0) {
+                if (this.trainerAndPokemonService.editPokemon(chosenPokemon) > 0) {
                     System.out.println("Pokémon edited successfully.");
                 }
             }
         }
     }
 
-    private int chooseFromOptions(List<FromTable> allObjects, TableType tableType) {
-        int choice;
+    private int chooseFromOptions(List<FromTable> entities, boolean cancellationPossible) {
         while (true) {
-            PrintUtils.printChooseFromOptions(allObjects, tableType);
+            PrintUtils.printChooseFromOptions(entities, cancellationPossible);
 
-            choice = InputUtils.readInt();
-
-            if (choice >= 0 && choice <= allObjects.size()) {
-                break;
+            final int choice = InputUtils.readInt();
+            if (choice >= 0 && choice <= entities.size()) {
+                return choice;
             }
             PrintUtils.printInvalidChoice();
         }
-        return choice;
-    }
-
-    private int giveOptions() {
-        System.out.println("""
-                Enter id of trainer who owns the Pokémon:
-                (Write corresponding 'id', 0 means that the Pokémon is not caught)
-                """);
-        List<FromTable> entities = this.trainerAndPokemonService.readAll(TableType.TRAINER);
-        entities.forEach(System.out::println);
-        List<Integer> entitiesId = this.trainerAndPokemonService.readAll(TableType.TRAINER).stream()
-                .map(entity -> (Trainer) entity)
-                .map(FromTable::getId)
-                .toList();
-        int trainerId = InputUtils.readInt();
-        while (!entitiesId.contains(trainerId) && trainerId != 0) {
-            PrintUtils.printInvalidChoice();
-            trainerId = InputUtils.readInt();
-        }
-        return trainerId;
     }
 }

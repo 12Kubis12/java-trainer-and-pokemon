@@ -12,11 +12,11 @@ public abstract class FromTable {
     }
 
     public String getName() {
-        return name;
+        return this.name;
     }
 
     public int getId() {
-        return id;
+        return this.id;
     }
 
     @Override
