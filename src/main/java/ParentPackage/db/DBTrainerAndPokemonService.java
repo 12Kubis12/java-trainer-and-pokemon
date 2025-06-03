@@ -24,7 +24,7 @@ public class DBTrainerAndPokemonService {
 
     private static final String READ_TRAINERS_ORDERED_BY_NUMBER_OF_POKEMON =
             """
-                    SELECT t.id, t.name, COUNT(*) AS number_of_pokemon
+                    SELECT t.*, COUNT(*) AS number_of_pokemon
                     FROM trainer t
                     JOIN pokemon p ON p.trainer_id = t.id
                     GROUP BY t.id
