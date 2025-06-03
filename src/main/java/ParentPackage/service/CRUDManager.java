@@ -114,7 +114,7 @@ public class CRUDManager {
                 System.out.println("Enter full name:");
                 final String name = InputUtils.readString();
                 if (this.trainerAndPokemonService.createTrainer(name) > 0) {
-                    System.out.println("Trainer created successfully.");
+                    System.out.println("Trainer successfully created.");
                 }
             }
             case POKEMON -> {
@@ -131,7 +131,7 @@ public class CRUDManager {
                     result = this.trainerAndPokemonService.createPokemon(name, trainerId);
                 }
                 if (result > 0) {
-                    System.out.println("Pokémon created successfully.");
+                    System.out.println("Pokémon successfully created.");
                 }
             }
         }
@@ -144,7 +144,7 @@ public class CRUDManager {
 
         if (choice != 0) {
             if (this.trainerAndPokemonService.delete(tableType, entities.get(choice - 1).getId()) > 0) {
-                System.out.println(tableType + " deleted successfully.");
+                System.out.println(tableType + " successfully deleted.");
             }
         }
     }
@@ -160,12 +160,12 @@ public class CRUDManager {
                 switch (tableType) {
                     case TRAINER -> {
                         if (this.trainerAndPokemonService.editTrainer((Trainer) entityToEdit.get()) > 0) {
-                            System.out.println("Trainer edited successfully.");
+                            System.out.println("Trainer successfully edited.");
                         }
                     }
                     case POKEMON -> {
                         if (this.trainerAndPokemonService.editPokemon((Pokemon) entityToEdit.get()) > 0) {
-                            System.out.println("Pokémon edited successfully.");
+                            System.out.println("Pokémon successfully edited.");
                         }
                     }
                 }
@@ -251,10 +251,16 @@ public class CRUDManager {
             final int secondChoice = this.chooseFromOptions(pokemon, true);
 
             if (secondChoice != 0) {
-                final Pokemon chosenPokemon = (Pokemon) pokemon.get(secondChoice - 1);
-                chosenPokemon.setTrainer_id(trainerId);
-                if (this.trainerAndPokemonService.editPokemon(chosenPokemon) > 0) {
-                    System.out.println("Pokémon caught successfully.");
+                final Random random = new Random();
+                final int success = random.nextInt(2);
+                if (success == 0) {
+                    final Pokemon chosenPokemon = (Pokemon) pokemon.get(secondChoice - 1);
+                    chosenPokemon.setTrainer_id(trainerId);
+                    if (this.trainerAndPokemonService.editPokemon(chosenPokemon) > 0) {
+                        System.out.println("Pokémon successfully caught.");
+                    }
+                } else {
+                    System.out.println("Pokémon escaped. Try again!");
                 }
             }
         }
